@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Net.Http;
 
 namespace DependencyInjectionWorkshop.Models
 {
@@ -43,12 +42,10 @@ namespace DependencyInjectionWorkshop.Models
 
             if (hashedPassword == dbPassword && otp == currentOtp)
             {
-                _failedCounter.Reset(accountId);
                 return true;
             }
             else
             {
-                _failedCounter.Add(accountId);
                 LogFailedCount(accountId);
                 return false;
             }

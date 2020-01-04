@@ -2,16 +2,16 @@
 {
     public class AuthenticationDecoratorBase : IAuthentication
     {
-        private readonly IAuthentication _authenticationService;
+        private readonly IAuthentication _authentication;
 
-        public AuthenticationDecoratorBase(IAuthentication authenticationService)
+        public AuthenticationDecoratorBase(IAuthentication authentication)
         {
-            _authenticationService = authenticationService;
+            _authentication = authentication;
         }
 
         public virtual bool Verify(string accountId, string password, string otp)
         {
-            return _authenticationService.Verify(accountId, password, otp);
+            return _authentication.Verify(accountId, password, otp);
         }
     }
 
@@ -19,7 +19,7 @@
     {
         private readonly INotification _notification;
 
-        public NotificationDecorator(IAuthentication authenticationService, INotification notification) : base(authenticationService)
+        public NotificationDecorator(IAuthentication authentication, INotification notification) : base(authentication)
         {
             _notification = notification;
         }
