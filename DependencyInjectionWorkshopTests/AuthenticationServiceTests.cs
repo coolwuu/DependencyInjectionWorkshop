@@ -8,6 +8,7 @@ namespace DependencyInjectionWorkshopTests
     public class AuthenticationServiceTests
     {
         private const string DefaultAccountId = "Wuu";
+        private const int DefaultFailedCount = 100;
         private IProfile _profile;
         private IHash _hash;
         private IOtpService _otpService;
@@ -71,6 +72,39 @@ namespace DependencyInjectionWorkshopTests
         {
             WhenInvalid();
             ShouldAddFailedCountWhenInvalid(DefaultAccountId);
+        }
+
+        [Test]
+        public void log_failed_count_when_invalid()
+        {
+            GivenFailedCount(DefaultFailedCount);
+            WhenInvalid();
+            ShouldLogWhenInvalid(DefaultAccountId, DefaultFailedCount.ToString());
+        }
+
+        [Test]
+        public void notify_when_invalid()
+        {
+            WhenInvalid();
+            ShouldNotifyWhenInvalid(DefaultAccountId);
+        }
+
+        private void ShouldNotifyWhenInvalid(string accountId)
+        {
+            _notification.Received(1).Notify(
+                Arg.Is<string>(x => x.Contains(accountId)),
+                Arg.Is<string>(x => x.Contains(accountId)));
+        }
+
+        private void ShouldLogWhenInvalid(string accountId, string failedCount)
+        {
+            _logger.Received(1)
+                .Info(Arg.Is<string>(x => x.Contains(accountId) && x.Contains(failedCount)));
+        }
+
+        private void GivenFailedCount(int failedCount)
+        {
+            _failedCounter.GetFailedCount(DefaultAccountId).Returns(failedCount);
         }
 
         private void ShouldAddFailedCountWhenInvalid(string accountId)
