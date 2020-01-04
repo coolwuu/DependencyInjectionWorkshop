@@ -1,5 +1,4 @@
-﻿using SlackAPI;
-using System;
+﻿using System;
 using System.Net.Http;
 
 namespace DependencyInjectionWorkshop.Models
@@ -9,12 +8,14 @@ namespace DependencyInjectionWorkshop.Models
         private readonly ProfileDao _profileDao;
         private readonly Sha256Adapter _sha256Adapter;
         private readonly OtpService _otpService;
+        private readonly SlackAdapter _slackAdapter;
 
         public AuthenticationService()
         {
             _profileDao = new ProfileDao();
             _sha256Adapter = new Sha256Adapter();
             _otpService = new OtpService();
+            _slackAdapter = new SlackAdapter();
         }
 
         public bool Verify(string accountId, string password, string otp)
@@ -39,7 +40,7 @@ namespace DependencyInjectionWorkshop.Models
             {
                 AddFailedCount(accountId, httpClient);
                 LogFailedCount(accountId, httpClient);
-                Notify(accountId);
+                _slackAdapter.Notify(accountId);
                 return false;
             }
         }
@@ -48,13 +49,6 @@ namespace DependencyInjectionWorkshop.Models
             var isLockedResponse = httpClient.PostAsJsonAsync("api/failedCounter/IsLocked", accountId).Result;
             isLockedResponse.EnsureSuccessStatusCode();
             return isLockedResponse.Content.ReadAsAsync<bool>().Result;
-        }
-
-        private static void Notify(string accountId)
-        {
-            var message = $"account:{accountId} try to login failed.";
-            var slackClient = new SlackClient("my api token");
-            slackClient.PostMessage(messageResponse => { }, "my channel", message, "my bot name");
         }
 
         private static void LogFailedCount(string accountId, HttpClient httpClient)
