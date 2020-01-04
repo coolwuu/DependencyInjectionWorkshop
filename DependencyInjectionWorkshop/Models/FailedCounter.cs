@@ -3,7 +3,7 @@ using System.Net.Http;
 
 namespace DependencyInjectionWorkshop.Models
 {
-    public interface ICounter
+    public interface IFailedCounter
     {
         void Reset(string accountId);
         void Add(string accountId);
@@ -11,7 +11,7 @@ namespace DependencyInjectionWorkshop.Models
         int GetFailedCount(string accountId);
     }
 
-    public class FailedCounter : ICounter
+    public class FailedCounter : IFailedCounter
     {
         private readonly HttpClient _httpClient;
 

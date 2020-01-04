@@ -9,7 +9,7 @@ namespace DependencyInjectionWorkshop.Models
         private readonly IHash _hash;
         private readonly IOtpService _otpService;
         private readonly INotification _notification;
-        private readonly ICounter _counter;
+        private readonly IFailedCounter _failedCounter;
         private readonly ILogger _logger;
 
         public AuthenticationService()
@@ -18,23 +18,23 @@ namespace DependencyInjectionWorkshop.Models
             _hash = new Sha256Adapter();
             _otpService = new OtpService();
             _notification = new SlackAdapter();
-            _counter = new FailedCounter();
+            _failedCounter = new FailedCounter();
             _logger = new NLogAdapter();
         }
 
-        public AuthenticationService(IProfile profile, IHash hash, IOtpService otpService, INotification notification, ICounter counter, ILogger logger)
+        public AuthenticationService(IProfile profile, IHash hash, IOtpService otpService, INotification notification, IFailedCounter failedCounter, ILogger logger)
         {
             _profile = profile;
             _hash = hash;
             _otpService = otpService;
             _notification = notification;
-            _counter = counter;
+            _failedCounter = failedCounter;
             _logger = logger;
         }
 
         public bool Verify(string accountId, string password, string otp)
         {
-            var isLocked = _counter.GetAccountIsLocked(accountId);
+            var isLocked = _failedCounter.GetAccountIsLocked(accountId);
             if (isLocked)
             {
                 throw new FailedTooManyTimesException() { AccountId = accountId };
@@ -46,12 +46,12 @@ namespace DependencyInjectionWorkshop.Models
 
             if (hashedPassword == dbPassword && otp == currentOtp)
             {
-                _counter.Reset(accountId);
+                _failedCounter.Reset(accountId);
                 return true;
             }
             else
             {
-                _counter.Add(accountId);
+                _failedCounter.Add(accountId);
                 LogFailedCount(accountId);
                 _notification.Notify(accountId);
                 return false;
@@ -60,7 +60,7 @@ namespace DependencyInjectionWorkshop.Models
 
         private void LogFailedCount(string accountId)
         {
-            var failedCount = _counter.GetFailedCount(accountId);
+            var failedCount = _failedCounter.GetFailedCount(accountId);
             _logger.Info($"accountId:{accountId} failed times:{failedCount}");
         }
     }
