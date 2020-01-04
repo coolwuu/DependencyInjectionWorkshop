@@ -14,6 +14,12 @@ namespace DependencyInjectionWorkshop.Models
             var resetResponse = httpClient.PostAsJsonAsync("api/failedCounter/Reset", accountId).Result;
             resetResponse.EnsureSuccessStatusCode();
         }
+
+        public void Add(string accountId, HttpClient httpClient)
+        {
+            var addFailedCountResponse = httpClient.PostAsJsonAsync("api/failedCounter/Add", accountId).Result;
+            addFailedCountResponse.EnsureSuccessStatusCode();
+        }
     }
 
     public class AuthenticationService
@@ -53,7 +59,7 @@ namespace DependencyInjectionWorkshop.Models
             }
             else
             {
-                AddFailedCount(accountId, httpClient);
+                _failedCounter.Add(accountId, httpClient);
                 LogFailedCount(accountId, httpClient);
                 _slackAdapter.Notify(accountId);
                 return false;
@@ -75,12 +81,6 @@ namespace DependencyInjectionWorkshop.Models
 
             var logger = NLog.LogManager.GetCurrentClassLogger();
             logger.Info($"accountId:{accountId} failed times:{failedCount}");
-        }
-
-        private static void AddFailedCount(string accountId, HttpClient httpClient)
-        {
-            var addFailedCountResponse = httpClient.PostAsJsonAsync("api/failedCounter/Add", accountId).Result;
-            addFailedCountResponse.EnsureSuccessStatusCode();
         }
     }
 
