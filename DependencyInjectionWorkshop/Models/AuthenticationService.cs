@@ -3,32 +3,6 @@ using System.Net.Http;
 
 namespace DependencyInjectionWorkshop.Models
 {
-    public class FailedCounter
-    {
-        public FailedCounter()
-        {
-        }
-
-        public void Reset(string accountId, HttpClient httpClient)
-        {
-            var resetResponse = httpClient.PostAsJsonAsync("api/failedCounter/Reset", accountId).Result;
-            resetResponse.EnsureSuccessStatusCode();
-        }
-
-        public void Add(string accountId, HttpClient httpClient)
-        {
-            var addFailedCountResponse = httpClient.PostAsJsonAsync("api/failedCounter/Add", accountId).Result;
-            addFailedCountResponse.EnsureSuccessStatusCode();
-        }
-
-        public bool GetAccountIsLocked(string accountId, HttpClient httpClient)
-        {
-            var isLockedResponse = httpClient.PostAsJsonAsync("api/failedCounter/IsLocked", accountId).Result;
-            isLockedResponse.EnsureSuccessStatusCode();
-            return isLockedResponse.Content.ReadAsAsync<bool>().Result;
-        }
-    }
-
     public class AuthenticationService
     {
         private readonly ProfileDao _profileDao;
@@ -36,6 +10,7 @@ namespace DependencyInjectionWorkshop.Models
         private readonly OtpService _otpService;
         private readonly SlackAdapter _slackAdapter;
         private readonly FailedCounter _failedCounter;
+        private readonly NLogAdapter _nLogAdapter;
 
         public AuthenticationService()
         {
@@ -44,6 +19,7 @@ namespace DependencyInjectionWorkshop.Models
             _otpService = new OtpService();
             _slackAdapter = new SlackAdapter();
             _failedCounter = new FailedCounter();
+            _nLogAdapter = new NLogAdapter();
         }
 
         public bool Verify(string accountId, string password, string otp)
@@ -75,23 +51,8 @@ namespace DependencyInjectionWorkshop.Models
 
         private void LogFailedCount(string accountId, HttpClient httpClient)
         {
-            var failedCount = GetFailedCount(accountId, httpClient);
-            Log(accountId, failedCount);
-        }
-
-        private static void Log(string accountId, int failedCount)
-        {
-            var logger = NLog.LogManager.GetCurrentClassLogger();
-            logger.Info($"accountId:{accountId} failed times:{failedCount}");
-        }
-
-        private int GetFailedCount(string accountId, HttpClient httpClient)
-        {
-            var failedCountResponse =
-                httpClient.PostAsJsonAsync("api/failedCounter/GetFailedCount", accountId).Result;
-            failedCountResponse.EnsureSuccessStatusCode();
-            var failedCount = failedCountResponse.Content.ReadAsAsync<int>().Result;
-            return failedCount;
+            var failedCount = _failedCounter.GetFailedCount(accountId, httpClient);
+            _nLogAdapter.Info(accountId, failedCount);
         }
     }
 
