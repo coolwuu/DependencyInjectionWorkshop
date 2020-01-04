@@ -9,8 +9,34 @@ using System.Text;
 
 namespace DependencyInjectionWorkshop.Models
 {
+    public class ProfileDao
+    {
+        public ProfileDao()
+        {
+        }
+
+        public string GetPasswordFromDb(string accountId)
+        {
+            string dbPassword;
+            using (var connection = new SqlConnection("my connection string"))
+            {
+                dbPassword = connection.Query<string>("spGetUserPassword", new { Id = accountId },
+                    commandType: CommandType.StoredProcedure).SingleOrDefault();
+            }
+
+            return dbPassword;
+        }
+    }
+
     public class AuthenticationService
     {
+        private readonly ProfileDao _profileDao;
+
+        public AuthenticationService()
+        {
+            _profileDao = new ProfileDao();
+        }
+
         public bool Verify(string accountId, string password, string otp)
         {
             var httpClient = new HttpClient() { BaseAddress = new Uri("http://joey.com/") };
@@ -20,7 +46,7 @@ namespace DependencyInjectionWorkshop.Models
                 throw new FailedTooManyTimesException() { AccountId = accountId };
             }
 
-            var dbPassword = GetPasswordFromDb(accountId);
+            var dbPassword = _profileDao.GetPasswordFromDb(accountId);
             var hashedPassword = GetHashedPassword(password);
             var currentOtp = GetCurrentOtp(accountId, httpClient);
 
@@ -37,7 +63,6 @@ namespace DependencyInjectionWorkshop.Models
                 return false;
             }
         }
-
         private static bool GetAccountIsLocked(string accountId, HttpClient httpClient)
         {
             var isLockedResponse = httpClient.PostAsJsonAsync("api/failedCounter/IsLocked", accountId).Result;
@@ -97,18 +122,6 @@ namespace DependencyInjectionWorkshop.Models
             }
 
             return hashStringBuilder.ToString();
-        }
-
-        private static string GetPasswordFromDb(string accountId)
-        {
-            string dbPassword;
-            using (var connection = new SqlConnection("my connection string"))
-            {
-                dbPassword = connection.Query<string>("spGetUserPassword", new { Id = accountId },
-                    commandType: CommandType.StoredProcedure).SingleOrDefault();
-            }
-
-            return dbPassword;
         }
     }
 
