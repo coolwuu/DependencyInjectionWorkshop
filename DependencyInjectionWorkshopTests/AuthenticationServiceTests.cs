@@ -16,7 +16,7 @@ namespace DependencyInjectionWorkshopTests
         private ILogger _logger;
         private INotification _notification;
         private IFailedCounter _failedCounter;
-        private AuthenticationService _authenticationService;
+        private IAuthentication _authenticationService;
 
         [SetUp]
         public void Setup()
