@@ -16,7 +16,7 @@ namespace DependencyInjectionWorkshopTests
         private ILogger _logger;
         private INotification _notification;
         private IFailedCounter _failedCounter;
-        private IAuthentication _authenticationService;
+        private IAuthentication _authentication;
 
         [SetUp]
         public void Setup()
@@ -27,7 +27,9 @@ namespace DependencyInjectionWorkshopTests
             _logger = Substitute.For<ILogger>();
             _notification = Substitute.For<INotification>();
             _failedCounter = Substitute.For<IFailedCounter>();
-            _authenticationService = new AuthenticationService(_profile, _hash, _otpService, _notification, _failedCounter, _logger);
+            _authentication = new AuthenticationService(_profile, _hash, _otpService, _failedCounter, _logger);
+
+            _authentication = new NotificationDecorator(_authentication, _notification);
         }
 
         [Test]
@@ -56,7 +58,7 @@ namespace DependencyInjectionWorkshopTests
             GivenPasswordFromDb(DefaultAccountId, "1234qwer");
             GivenHashedPassword("55688", "1234qwer");
             GivenOtp(DefaultAccountId, "ABCD1234");
-            _authenticationService.Verify(DefaultAccountId, "55688", "ABCD1234");
+            _authentication.Verify(DefaultAccountId, "55688", "ABCD1234");
         }
 
         [Test]
@@ -93,7 +95,7 @@ namespace DependencyInjectionWorkshopTests
 
         private void ShouldThrow<TException>() where TException : Exception
         {
-            TestDelegate action = () => _authenticationService.Verify(DefaultAccountId, "1234", "123456");
+            TestDelegate action = () => _authentication.Verify(DefaultAccountId, "1234", "123456");
             Assert.Throws<TException>(action);
         }
 
@@ -137,18 +139,18 @@ namespace DependencyInjectionWorkshopTests
             GivenPasswordFromDb(DefaultAccountId, "1234qwer");
             GivenHashedPassword("55688", "1234qwer");
             GivenOtp(DefaultAccountId, "ABCD1234");
-            _authenticationService.Verify(DefaultAccountId, "55688", "wrong");
+            _authentication.Verify(DefaultAccountId, "55688", "wrong");
         }
 
         private void ShouldBeInvalid(string accountId, string password, string otp)
         {
-            var isInvalid = _authenticationService.Verify(accountId, password, otp);
+            var isInvalid = _authentication.Verify(accountId, password, otp);
             Assert.IsFalse(isInvalid);
         }
 
         private void ShouldBeValid(string accountId, string password, string otp)
         {
-            var isValid = _authenticationService.Verify(accountId, password, otp);
+            var isValid = _authentication.Verify(accountId, password, otp);
             Assert.IsTrue(isValid);
         }
 
