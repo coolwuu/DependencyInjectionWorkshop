@@ -5,8 +5,8 @@ namespace DependencyInjectionWorkshop.Models
 {
     public class AuthenticationService
     {
-        private readonly IProfile _profileDao;
-        private readonly Sha256Adapter _sha256Adapter;
+        private readonly IProfile _profile;
+        private readonly IHash _hash;
         private readonly OtpService _otpService;
         private readonly SlackAdapter _slackAdapter;
         private readonly FailedCounter _failedCounter;
@@ -14,18 +14,18 @@ namespace DependencyInjectionWorkshop.Models
 
         public AuthenticationService()
         {
-            _profileDao = new ProfileDao();
-            _sha256Adapter = new Sha256Adapter();
+            _profile = new ProfileDao();
+            _hash = new Sha256Adapter();
             _otpService = new OtpService();
             _slackAdapter = new SlackAdapter();
             _failedCounter = new FailedCounter();
             _nLogAdapter = new NLogAdapter();
         }
 
-        public AuthenticationService(IProfile profileDao, Sha256Adapter sha256Adapter, OtpService otpService, SlackAdapter slackAdapter, FailedCounter failedCounter, NLogAdapter nLogAdapter)
+        public AuthenticationService(IProfile profile, IHash hash, OtpService otpService, SlackAdapter slackAdapter, FailedCounter failedCounter, NLogAdapter nLogAdapter)
         {
-            _profileDao = profileDao;
-            _sha256Adapter = sha256Adapter;
+            _profile = profile;
+            _hash = hash;
             _otpService = otpService;
             _slackAdapter = slackAdapter;
             _failedCounter = failedCounter;
@@ -40,8 +40,8 @@ namespace DependencyInjectionWorkshop.Models
                 throw new FailedTooManyTimesException() { AccountId = accountId };
             }
 
-            var dbPassword = _profileDao.GetPassword(accountId);
-            var hashedPassword = _sha256Adapter.GetHashedPassword(password);
+            var dbPassword = _profile.GetPassword(accountId);
+            var hashedPassword = _hash.Compute(password);
             var currentOtp = _otpService.GetCurrentOtp(accountId);
 
             if (hashedPassword == dbPassword && otp == currentOtp)
