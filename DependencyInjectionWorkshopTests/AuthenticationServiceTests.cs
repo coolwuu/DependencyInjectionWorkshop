@@ -1,4 +1,5 @@
-﻿using DependencyInjectionWorkshop.Models;
+﻿using System;
+using DependencyInjectionWorkshop.Models;
 using NSubstitute;
 using NUnit.Framework;
 
@@ -80,6 +81,25 @@ namespace DependencyInjectionWorkshopTests
             GivenFailedCount(DefaultFailedCount);
             WhenInvalid();
             ShouldLogWhenInvalid(DefaultAccountId, DefaultFailedCount.ToString());
+        }
+
+        [Test]
+        public void account_is_locked()
+        {
+            GivenAccountIsLocked(DefaultAccountId, true);
+            ShouldThrow<FailedTooManyTimesException>();
+        }
+
+
+        private void ShouldThrow<TException>() where TException : Exception
+        {
+            TestDelegate action = () => _authenticationService.Verify(DefaultAccountId, "1234", "123456");
+            Assert.Throws<TException>(action);
+        }
+
+        private void GivenAccountIsLocked(string accountId, bool isLocked)
+        {
+            _failedCounter.GetAccountIsLocked(accountId).Returns(isLocked);
         }
 
         [Test]
