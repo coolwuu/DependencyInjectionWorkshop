@@ -40,7 +40,7 @@ namespace DependencyInjectionWorkshop.Models
                 throw new FailedTooManyTimesException() { AccountId = accountId };
             }
 
-            var dbPassword = _profileDao.GetPasswordFromDb(accountId);
+            var dbPassword = _profileDao.GetPassword(accountId);
             var hashedPassword = _sha256Adapter.GetHashedPassword(password);
             var currentOtp = _otpService.GetCurrentOtp(accountId);
 
