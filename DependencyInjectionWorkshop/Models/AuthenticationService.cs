@@ -42,8 +42,7 @@ namespace DependencyInjectionWorkshop.Models
         {
             var isLockedResponse = httpClient.PostAsJsonAsync("api/failedCounter/IsLocked", accountId).Result;
             isLockedResponse.EnsureSuccessStatusCode();
-            var isLocked = isLockedResponse.Content.ReadAsAsync<bool>().Result;
-            return isLocked;
+            return isLockedResponse.Content.ReadAsAsync<bool>().Result;
         }
 
         private static void Notify(string accountId)
@@ -84,8 +83,7 @@ namespace DependencyInjectionWorkshop.Models
                 throw new Exception($"web api error, accountId:{accountId}");
             }
 
-            var currentOtp = response.Content.ReadAsAsync<string>().Result;
-            return currentOtp;
+            return response.Content.ReadAsAsync<string>().Result;
         }
 
         private static string GetHashedPassword(string password)
@@ -98,8 +96,7 @@ namespace DependencyInjectionWorkshop.Models
                 hashStringBuilder.Append(theByte.ToString("x2"));
             }
 
-            var hashedPassword = hashStringBuilder.ToString();
-            return hashedPassword;
+            return hashStringBuilder.ToString();
         }
 
         private static string GetPasswordFromDb(string accountId)
