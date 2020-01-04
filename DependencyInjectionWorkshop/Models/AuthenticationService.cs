@@ -3,12 +3,26 @@ using System.Net.Http;
 
 namespace DependencyInjectionWorkshop.Models
 {
+    public class FailedCounter
+    {
+        public FailedCounter()
+        {
+        }
+
+        public void Reset(string accountId, HttpClient httpClient)
+        {
+            var resetResponse = httpClient.PostAsJsonAsync("api/failedCounter/Reset", accountId).Result;
+            resetResponse.EnsureSuccessStatusCode();
+        }
+    }
+
     public class AuthenticationService
     {
         private readonly ProfileDao _profileDao;
         private readonly Sha256Adapter _sha256Adapter;
         private readonly OtpService _otpService;
         private readonly SlackAdapter _slackAdapter;
+        private readonly FailedCounter _failedCounter;
 
         public AuthenticationService()
         {
@@ -16,6 +30,7 @@ namespace DependencyInjectionWorkshop.Models
             _sha256Adapter = new Sha256Adapter();
             _otpService = new OtpService();
             _slackAdapter = new SlackAdapter();
+            _failedCounter = new FailedCounter();
         }
 
         public bool Verify(string accountId, string password, string otp)
@@ -33,7 +48,7 @@ namespace DependencyInjectionWorkshop.Models
 
             if (hashedPassword == dbPassword && otp == currentOtp)
             {
-                ResetFailedCount(accountId, httpClient);
+                _failedCounter.Reset(accountId, httpClient);
                 return true;
             }
             else
@@ -66,12 +81,6 @@ namespace DependencyInjectionWorkshop.Models
         {
             var addFailedCountResponse = httpClient.PostAsJsonAsync("api/failedCounter/Add", accountId).Result;
             addFailedCountResponse.EnsureSuccessStatusCode();
-        }
-
-        private static void ResetFailedCount(string accountId, HttpClient httpClient)
-        {
-            var resetResponse = httpClient.PostAsJsonAsync("api/failedCounter/Reset", accountId).Result;
-            resetResponse.EnsureSuccessStatusCode();
         }
     }
 
