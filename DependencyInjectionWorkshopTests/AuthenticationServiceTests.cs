@@ -38,12 +38,52 @@ namespace DependencyInjectionWorkshopTests
         }
 
         [Test]
+        public void reset_failed_count_when_valid()
+        {
+            WhenValid();
+            ShouldResetFailedCount(DefaultAccountId);
+        }
+
+        private void ShouldResetFailedCount(string accountId)
+        {
+            _failedCounter.Received(1).Reset(accountId);
+        }
+
+        private void WhenValid()
+        {
+            GivenPasswordFromDb(DefaultAccountId, "1234qwer");
+            GivenHashedPassword("55688", "1234qwer");
+            GivenOtp(DefaultAccountId, "ABCD1234");
+            _authenticationService.Verify(DefaultAccountId, "55688", "ABCD1234");
+        }
+
+        [Test]
         public void is_invalid()
         {
             GivenPasswordFromDb(DefaultAccountId, "1234qwer");
             GivenHashedPassword("55688", "1234qwer");
             GivenOtp(DefaultAccountId, "ABCD1234");
             ShouldBeInvalid(DefaultAccountId, "55688", "wrong");
+        }
+
+        [Test]
+        public void add_failed_count_when_invalid()
+        {
+            WhenInvalid();
+            ShouldAddFailedCountWhenInvalid(DefaultAccountId);
+        }
+
+        private void ShouldAddFailedCountWhenInvalid(string accountId)
+        {
+            _failedCounter.Received(1).Add(accountId);
+        }
+
+        private void WhenInvalid()
+        {
+            GivenPasswordFromDb(DefaultAccountId, "1234qwer");
+            GivenHashedPassword("55688", "1234qwer");
+            GivenOtp(DefaultAccountId, "ABCD1234");
+            _authenticationService.Verify(DefaultAccountId, "55688", "wrong");
         }
 
         private void ShouldBeInvalid(string accountId, string password, string otp)

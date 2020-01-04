@@ -53,7 +53,7 @@ namespace DependencyInjectionWorkshop.Models
             {
                 _failedCounter.Add(accountId);
                 LogFailedCount(accountId);
-                _notification.Notify(accountId);
+                _notification.Notify(accountId, $"account:{accountId} try to login failed.");
                 return false;
             }
         }
