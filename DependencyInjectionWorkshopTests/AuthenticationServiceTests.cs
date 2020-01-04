@@ -7,6 +7,7 @@ namespace DependencyInjectionWorkshopTests
     [TestFixture]
     public class AuthenticationServiceTests
     {
+        private const string DefaultAccountId = "Wuu";
         private IProfile _profile;
         private IHash _hash;
         private IOtpService _otpService;
@@ -25,16 +26,15 @@ namespace DependencyInjectionWorkshopTests
             _notification = Substitute.For<INotification>();
             _failedCounter = Substitute.For<IFailedCounter>();
             _authenticationService = new AuthenticationService(_profile, _hash, _otpService, _notification, _failedCounter, _logger);
-
         }
 
         [Test]
         public void is_valid()
         {
-            GivenPasswordFromDb("Wuu", "1234qwer");
+            GivenPasswordFromDb(DefaultAccountId, "1234qwer");
             GivenHashedPassword("55688", "1234qwer");
-            GivenOtp("Wuu", "56789");
-            ShouldBeValid("Wuu", "55688", "56789");
+            GivenOtp(DefaultAccountId, "ABCD1234");
+            ShouldBeValid(DefaultAccountId, "55688", "ABCD1234");
         }
 
         private void ShouldBeValid(string accountId, string password, string otp)
