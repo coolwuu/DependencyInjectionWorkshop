@@ -3,7 +3,15 @@ using System.Net.Http;
 
 namespace DependencyInjectionWorkshop.Models
 {
-    public class FailedCounter
+    public interface ICounter
+    {
+        void Reset(string accountId);
+        void Add(string accountId);
+        bool GetAccountIsLocked(string accountId);
+        int GetFailedCount(string accountId);
+    }
+
+    public class FailedCounter : ICounter
     {
         private readonly HttpClient _httpClient;
 
