@@ -24,8 +24,7 @@ namespace DependencyInjectionWorkshop.Models
 
         public bool Verify(string accountId, string password, string otp)
         {
-            var httpClient = new HttpClient() { BaseAddress = new Uri("http://joey.com/") };
-            var isLocked = _failedCounter.GetAccountIsLocked(accountId, httpClient);
+            var isLocked = _failedCounter.GetAccountIsLocked(accountId);
             if (isLocked)
             {
                 throw new FailedTooManyTimesException() { AccountId = accountId };
@@ -33,25 +32,25 @@ namespace DependencyInjectionWorkshop.Models
 
             var dbPassword = _profileDao.GetPasswordFromDb(accountId);
             var hashedPassword = _sha256Adapter.GetHashedPassword(password);
-            var currentOtp = _otpService.GetCurrentOtp(accountId, httpClient);
+            var currentOtp = _otpService.GetCurrentOtp(accountId);
 
             if (hashedPassword == dbPassword && otp == currentOtp)
             {
-                _failedCounter.Reset(accountId, httpClient);
+                _failedCounter.Reset(accountId);
                 return true;
             }
             else
             {
-                _failedCounter.Add(accountId, httpClient);
-                LogFailedCount(accountId, httpClient);
+                _failedCounter.Add(accountId);
+                LogFailedCount(accountId);
                 _slackAdapter.Notify(accountId);
                 return false;
             }
         }
 
-        private void LogFailedCount(string accountId, HttpClient httpClient)
+        private void LogFailedCount(string accountId)
         {
-            var failedCount = _failedCounter.GetFailedCount(accountId, httpClient);
+            var failedCount = _failedCounter.GetFailedCount(accountId);
             _nLogAdapter.Info($"accountId:{accountId} failed times:{failedCount}");
         }
     }
