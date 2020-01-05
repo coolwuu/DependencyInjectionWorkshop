@@ -12,9 +12,16 @@ namespace MyConsole
         private static void Main(string[] args)
         {
             RegisterContainer();
+            Login("Wuu's Agent");
             var authentication = _container.Resolve<IAuthentication>();
             var isValid = authentication.Verify("joey", "abc", "wrong otp");
             Console.WriteLine($"result:{isValid}");
+        }
+
+        private static void Login(string userName)
+        {
+            var context = _container.Resolve<IContext>();
+            context.SetUser(userName);
         }
 
         private static void RegisterContainer()
@@ -26,14 +33,45 @@ namespace MyConsole
             builder.RegisterType<FakeLogger>().As<ILogger>();
             builder.RegisterType<FakeSlack>().As<INotification>();
             builder.RegisterType<FakeFailedCounter>().As<IFailedCounter>();
+            builder.RegisterType<FakeContext>().As<IContext>().SingleInstance();
 
             builder.RegisterType<AuthenticationService>().As<IAuthentication>();
             builder.RegisterDecorator<FailedCounterDecorator, IAuthentication>();
             builder.RegisterDecorator<LogDecorator, IAuthentication>();
             builder.RegisterDecorator<NotificationDecorator, IAuthentication>();
             //builder.RegisterDecorator<LogMethodInfoDecorator, IAuthentication>();
+            builder.RegisterDecorator<AuditLogDecorator, IAuthentication>();
             _container = builder.Build();
         }
+    }
+
+    public class FakeContext : IContext
+    {
+        private User _user;
+
+        public User GetUser()
+        {
+            return _user;
+        }
+
+        public void SetUser(string userName)
+        {
+            _user = new User()
+            {
+                Name = userName
+            };
+        }
+    }
+
+    public interface IContext
+    {
+        User GetUser();
+        void SetUser(string userName);
+    }
+
+    public class User
+    {
+        public string Name { get; set; }
     }
 
     internal class FakeLogger : ILogger
