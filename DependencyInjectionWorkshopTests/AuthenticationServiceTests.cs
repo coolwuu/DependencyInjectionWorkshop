@@ -2,6 +2,7 @@
 using NSubstitute;
 using NUnit.Framework;
 using System;
+using NSubstitute.Core.Arguments;
 
 namespace DependencyInjectionWorkshopTests
 {
@@ -28,7 +29,6 @@ namespace DependencyInjectionWorkshopTests
             _notification = Substitute.For<INotification>();
             _failedCounter = Substitute.For<IFailedCounter>();
             _authentication = new AuthenticationService(_profile, _hash, _otpService);
-
             _authentication = new FailedCounterDecorator(_authentication, _failedCounter, _logger);
             _authentication = new NotificationDecorator(_authentication, _notification);
         }
@@ -69,6 +69,20 @@ namespace DependencyInjectionWorkshopTests
             GivenHashedPassword("55688", "1234qwer");
             GivenOtp(DefaultAccountId, "ABCD1234");
             ShouldBeInvalid(DefaultAccountId, "55688", "wrong");
+        }
+
+        [Test]
+        public void invalid_order()
+        {
+            WhenInvalid();
+            Received.InOrder(() =>
+            {
+                _failedCounter.GetAccountIsLocked(DefaultAccountId);
+                _failedCounter.AddFailedCount(DefaultAccountId);
+                _failedCounter.GetFailedCount(DefaultAccountId);
+                _logger.Info(Arg.Any<string>());
+                _notification.Notify(DefaultAccountId, Arg.Any<string>());
+            });
         }
 
         [Test]
@@ -131,7 +145,7 @@ namespace DependencyInjectionWorkshopTests
 
         private void ShouldAddFailedCountWhenInvalid(string accountId)
         {
-            _failedCounter.Received(1).Add(accountId);
+            _failedCounter.Received(1).AddFailedCount(accountId);
         }
 
         private void WhenInvalid()

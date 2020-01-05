@@ -37,7 +37,7 @@ namespace DependencyInjectionWorkshop.Models
 
         private void Add(string accountId)
         {
-            _failedCounter.Add(accountId);
+            _failedCounter.AddFailedCount(accountId);
         }
 
         private void CheckAccountIsLocked(string accountId)

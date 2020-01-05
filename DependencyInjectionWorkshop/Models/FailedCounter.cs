@@ -6,7 +6,7 @@ namespace DependencyInjectionWorkshop.Models
     public interface IFailedCounter
     {
         void Reset(string accountId);
-        void Add(string accountId);
+        void AddFailedCount(string accountId);
         bool GetAccountIsLocked(string accountId);
         int GetFailedCount(string accountId);
     }
@@ -26,7 +26,7 @@ namespace DependencyInjectionWorkshop.Models
             resetResponse.EnsureSuccessStatusCode();
         }
 
-        public void Add(string accountId)
+        public void AddFailedCount(string accountId)
         {
             var addFailedCountResponse = _httpClient.PostAsJsonAsync("api/failedCounter/Add", accountId).Result;
             addFailedCountResponse.EnsureSuccessStatusCode();
