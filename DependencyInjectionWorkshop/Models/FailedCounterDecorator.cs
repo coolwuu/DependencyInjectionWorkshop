@@ -1,16 +1,21 @@
-﻿namespace DependencyInjectionWorkshop.Models
+﻿using NLog.Fluent;
+
+namespace DependencyInjectionWorkshop.Models
 {
     public class FailedCounterDecorator : AuthenticationDecoratorBase
     {
         private readonly IFailedCounter _failedCounter;
+        private readonly ILogger _logger;
 
-        public FailedCounterDecorator(IAuthentication authenticationService, IFailedCounter failedCounter) : base(authenticationService)
+        public FailedCounterDecorator(IAuthentication authenticationService, IFailedCounter failedCounter, ILogger logger) : base(authenticationService)
         {
             _failedCounter = failedCounter;
+            _logger = logger;
         }
 
         public override bool Verify(string accountId, string password, string otp)
         {
+            IsLocked(accountId);
             var isValid = base.Verify(accountId, password, otp);
             if (isValid)
             {
@@ -19,6 +24,7 @@
             else
             {
                 Add(accountId);
+                LogFailedCount(accountId);
             }
 
             return isValid;
@@ -32,6 +38,21 @@
         private void Add(string accountId)
         {
             _failedCounter.Add(accountId);
+        }
+
+        public void IsLocked(string accountId)
+        {
+            var isLocked = _failedCounter.GetAccountIsLocked(accountId);
+            if (isLocked)
+            {
+                throw new FailedTooManyTimesException() {AccountId = accountId};
+            }
+        }
+
+        public void LogFailedCount(string accountId)
+        {
+            var failedCount = _failedCounter.GetFailedCount(accountId);
+            _logger.Info($"accountId:{accountId} failed times:{failedCount}");
         }
     }
 }
