@@ -17,8 +17,8 @@ namespace MyConsole
 
         public void Intercept(IInvocation invocation)
         {
-            var username = _context.GetUser().Name;
             var methodName = invocation.Method.Name;
+            var username = _context.GetUser().Name;
             _logger.Info($"[AuditInterceptor.{methodName}] User:{username} parameters: {string.Join("|", invocation.Arguments.Select(x => (x ?? "").ToString()))}");
             invocation.Proceed();
             var returnValue = invocation.ReturnValue;
