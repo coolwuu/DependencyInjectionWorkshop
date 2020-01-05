@@ -29,7 +29,9 @@ namespace MyConsole
 
             builder.RegisterType<AuthenticationService>().As<IAuthentication>();
             builder.RegisterDecorator<FailedCounterDecorator, IAuthentication>();
+            builder.RegisterDecorator<LogDecorator, IAuthentication>();
             builder.RegisterDecorator<NotificationDecorator, IAuthentication>();
+            //builder.RegisterDecorator<LogMethodInfoDecorator, IAuthentication>();
             _container = builder.Build();
         }
     }

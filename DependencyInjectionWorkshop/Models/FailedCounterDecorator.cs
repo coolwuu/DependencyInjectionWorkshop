@@ -5,12 +5,10 @@ namespace DependencyInjectionWorkshop.Models
     public class FailedCounterDecorator : AuthenticationDecoratorBase
     {
         private readonly IFailedCounter _failedCounter;
-        private readonly ILogger _logger;
 
-        public FailedCounterDecorator(IAuthentication authenticationService, IFailedCounter failedCounter, ILogger logger) : base(authenticationService)
+        public FailedCounterDecorator(IAuthentication authenticationService, IFailedCounter failedCounter) : base(authenticationService)
         {
             _failedCounter = failedCounter;
-            _logger = logger;
         }
 
         public override bool Verify(string accountId, string password, string otp)
@@ -24,7 +22,6 @@ namespace DependencyInjectionWorkshop.Models
             else
             {
                 Add(accountId);
-                LogFailedCount(accountId);
             }
 
             return isValid;
@@ -47,12 +44,6 @@ namespace DependencyInjectionWorkshop.Models
             {
                 throw new FailedTooManyTimesException() {AccountId = accountId};
             }
-        }
-
-        private void LogFailedCount(string accountId)
-        {
-            var failedCount = _failedCounter.GetFailedCount(accountId);
-            _logger.Info($"accountId:{accountId} failed times:{failedCount}");
         }
     }
 }
