@@ -1,7 +1,7 @@
-﻿using System;
-using DependencyInjectionWorkshop.Models;
+﻿using DependencyInjectionWorkshop.Models;
 using NSubstitute;
 using NUnit.Framework;
+using System;
 
 namespace DependencyInjectionWorkshopTests
 {
@@ -31,7 +31,6 @@ namespace DependencyInjectionWorkshopTests
 
             _authentication = new FailedCounterDecorator(_authentication, _failedCounter, _logger);
             _authentication = new NotificationDecorator(_authentication, _notification);
-
         }
 
         [Test]
@@ -93,7 +92,6 @@ namespace DependencyInjectionWorkshopTests
             GivenAccountIsLocked(DefaultAccountId, true);
             ShouldThrow<FailedTooManyTimesException>();
         }
-
 
         private void ShouldThrow<TException>() where TException : Exception
         {

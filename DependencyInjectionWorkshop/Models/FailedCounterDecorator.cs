@@ -15,7 +15,7 @@ namespace DependencyInjectionWorkshop.Models
 
         public override bool Verify(string accountId, string password, string otp)
         {
-            IsLocked(accountId);
+            CheckAccountIsLocked(accountId);
             var isValid = base.Verify(accountId, password, otp);
             if (isValid)
             {
@@ -40,7 +40,7 @@ namespace DependencyInjectionWorkshop.Models
             _failedCounter.Add(accountId);
         }
 
-        public void IsLocked(string accountId)
+        private void CheckAccountIsLocked(string accountId)
         {
             var isLocked = _failedCounter.GetAccountIsLocked(accountId);
             if (isLocked)
@@ -49,7 +49,7 @@ namespace DependencyInjectionWorkshop.Models
             }
         }
 
-        public void LogFailedCount(string accountId)
+        private void LogFailedCount(string accountId)
         {
             var failedCount = _failedCounter.GetFailedCount(accountId);
             _logger.Info($"accountId:{accountId} failed times:{failedCount}");
