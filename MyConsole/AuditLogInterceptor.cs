@@ -19,7 +19,7 @@ namespace MyConsole
         {
             var username = _context.GetUser().Name;
             var methodName = invocation.Method.Name;
-            _logger.Info($"[AuditInterceptor.{methodName}] User:{username} parameters: {string.Join("|", invocation.Arguments.Select(x => x ?? "").ToString())}");
+            _logger.Info($"[AuditInterceptor.{methodName}] User:{username} parameters: {string.Join("|", invocation.Arguments.Select(x => (x ?? "").ToString()))}");
             invocation.Proceed();
             var returnValue = invocation.ReturnValue;
             _logger.Info($"[AuditInterceptor.{methodName}] ReturnValue:{returnValue}");

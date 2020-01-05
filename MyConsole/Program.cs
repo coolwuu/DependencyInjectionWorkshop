@@ -33,7 +33,8 @@ namespace MyConsole
             builder.RegisterType<FakeHash>().As<IHash>();
             builder.RegisterType<FakeLogger>().As<ILogger>();
             builder.RegisterType<FakeSlack>().As<INotification>();
-            builder.RegisterType<FakeFailedCounter>().As<IFailedCounter>();
+            builder.RegisterType<FakeFailedCounter>().As<IFailedCounter>().EnableInterfaceInterceptors()
+                .InterceptedBy(typeof(AuditLogInterceptor)); ;
             builder.RegisterType<FakeContext>().As<IContext>().SingleInstance();
             builder.RegisterType<AuditLogInterceptor>();
 
