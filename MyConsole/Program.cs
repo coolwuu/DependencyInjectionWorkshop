@@ -2,6 +2,7 @@
 using System;
 using System.Runtime.InteropServices;
 using Autofac;
+using Autofac.Extras.DynamicProxy;
 
 namespace MyConsole
 {
@@ -34,13 +35,16 @@ namespace MyConsole
             builder.RegisterType<FakeSlack>().As<INotification>();
             builder.RegisterType<FakeFailedCounter>().As<IFailedCounter>();
             builder.RegisterType<FakeContext>().As<IContext>().SingleInstance();
+            builder.RegisterType<AuditLogInterceptor>();
 
-            builder.RegisterType<AuthenticationService>().As<IAuthentication>();
+            builder.RegisterType<AuthenticationService>().As<IAuthentication>()
+                .EnableInterfaceInterceptors()
+                .InterceptedBy(typeof(AuditLogInterceptor));
             builder.RegisterDecorator<FailedCounterDecorator, IAuthentication>();
             builder.RegisterDecorator<LogDecorator, IAuthentication>();
             builder.RegisterDecorator<NotificationDecorator, IAuthentication>();
             //builder.RegisterDecorator<LogMethodInfoDecorator, IAuthentication>();
-            builder.RegisterDecorator<AuditLogDecorator, IAuthentication>();
+            //builder.RegisterDecorator<AuditLogDecorator, IAuthentication>();
             _container = builder.Build();
         }
     }

@@ -74,6 +74,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AuditLogDecorator.cs" />
+    <Compile Include="AuditLogInterceptor.cs" />
     <Compile Include="LogMethodInfoDecorator.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

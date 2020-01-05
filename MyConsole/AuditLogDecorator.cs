@@ -16,9 +16,9 @@ namespace MyConsole
         public override bool Verify(string accountId, string password, string otp)
         {
             var userName = _context.GetUser().Name;
-            _logger.Info($"user: {userName} | parameters : {accountId} | {password} | {otp}");
+            _logger.Info($"[AUDIT] user: {userName} | parameters : {accountId} | {password} | {otp}");
             var isValid = base.Verify(accountId, password, otp);
-            _logger.Info($"result : {isValid}");
+            _logger.Info($"[AUDIT] result : {isValid}");
             return isValid;
         }
     }
